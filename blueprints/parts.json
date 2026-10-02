@@ -1,0 +1,72 @@
+{
+ "osmia_blueprint": 1,
+ "notes": "The parts catalogue, as in Osmia: parts with a part number, description, unit and images, in nested categories (e.g. Hardware > Fasteners). Each category lists the attributes its parts have (thread, material, ...); sub-categories inherit their parents' attributes. Parts list the parts they mate with (two-way), the parts they accept (a housing accepts its crimp contacts; the contact shows the housing under Fits into), and can be archived.",
+ "apps": [
+  {
+   "key": "parts",
+   "name": "Parts",
+   "icon": "📦",
+   "description": "The parts catalogue: what each part is, how it is categorised, and which parts go together. Quantities and locations are not part of this app.",
+   "tables": [
+    {
+     "key": "categories",
+     "name": "Categories",
+     "description": "Nested categories (e.g. Hardware > Fasteners). Each lists the attributes its parts have; sub-categories inherit their parents' attributes.",
+     "fields": [
+      {"key": "name", "name": "Name", "type": "text", "required": true},
+      {"key": "parent", "name": "Parent category", "type": "link",
+       "help": "Leave empty for a top-level category.",
+       "options": {"target": "parts.categories", "multiple": false, "related_name": "Sub-categories"}},
+      {"key": "attributes", "name": "Attributes", "type": "attribute_defs",
+       "help": "What parts in this category are described by, e.g. Thread, Length, Material. The hint is shown as an example."},
+      {"key": "description", "name": "Description", "type": "long_text"}
+     ],
+     "display_field": "name",
+     "tree_field": "parent",
+     "views": [
+      {"key": "all", "name": "All categories", "columns": ["name", "parent", "attributes"], "sort": [{"field": "name", "dir": "asc"}]}
+     ]
+    },
+    {
+     "key": "parts",
+     "name": "Parts",
+     "description": "Parts only describe things. Untick Active to archive a part.",
+     "fields": [
+      {"key": "part_number", "name": "Part number", "type": "text", "required": true, "unique": true},
+      {"key": "description", "name": "Description", "type": "text"},
+      {"key": "category", "name": "Category", "type": "link",
+       "options": {"target": "parts.categories", "multiple": false, "related_name": "Parts"}},
+      {"key": "attributes", "name": "Attributes", "type": "attribute_values",
+       "help": "The attributes of the part's category.",
+       "options": {"via": "category", "defs": "attributes"}},
+      {"key": "unit", "name": "Unit", "type": "text", "options": {"default": "pcs"}},
+      {"key": "images", "name": "Images", "type": "images"},
+      {"key": "mates_with", "name": "Mates with", "type": "link",
+       "help": "Parts this one connects to, both ways: e.g. a 9-pin plug mates with a 9-socket receptacle.",
+       "options": {"target": "parts.parts", "multiple": true, "symmetric": true}},
+      {"key": "accepts", "name": "Accepts", "type": "link",
+       "help": "Parts used in or with this one: e.g. a D-sub housing accepts its crimp contacts.",
+       "options": {"target": "parts.parts", "multiple": true, "related_name": "Fits into"}},
+      {"key": "is_active", "name": "Active", "type": "checkbox",
+       "help": "Untick to archive the part.", "options": {"default": true}},
+      {"key": "notes", "name": "Notes", "type": "long_text"}
+     ],
+     "display_field": "part_number",
+     "subtitle_field": "description",
+     "views": [
+      {"key": "active", "name": "Active parts",
+       "columns": ["images", "part_number", "description", "category", "attributes", "unit"],
+       "filters": [{"field": "is_active", "op": "true"}],
+       "sort": [{"field": "part_number", "dir": "asc"}]},
+      {"key": "archived", "name": "Archived",
+       "columns": ["part_number", "description", "category", "unit"],
+       "filters": [{"field": "is_active", "op": "false"}],
+       "sort": [{"field": "part_number", "dir": "asc"}]},
+      {"key": "all", "name": "All parts",
+       "sort": [{"field": "part_number", "dir": "asc"}]}
+     ]
+    }
+   ]
+  }
+ ]
+}

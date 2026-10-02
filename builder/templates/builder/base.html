@@ -1,0 +1,49 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Osmia{% endblock %} · Osmia</title>
+  <link rel="stylesheet" href="{% static 'builder/app.css' %}">
+  <link rel="icon" href="{% static 'builder/icon.svg' %}" type="image/svg+xml">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <a class="brand" href="{% url 'home' %}">Osmia</a>
+    {% for a in sidebar_apps %}
+      <div class="nav-app{% if app and app.pk == a.pk %} current{% endif %}">
+        <a class="nav-app-name" href="{{ a.get_absolute_url }}">{% if a.icon %}<span class="icon">{{ a.icon }}</span>{% endif %}{{ a.name }}</a>
+        {% for t in a.tables.all %}
+          <a class="nav-table{% if table and table.pk == t.pk %} active{% endif %}" href="{{ t.get_absolute_url }}">{{ t.name }}</a>
+        {% endfor %}
+      </div>
+    {% empty %}
+      <p class="muted small nav-empty">No apps yet.</p>
+    {% endfor %}
+    <div class="nav-bottom">
+      {% if user.is_staff %}
+        <a href="{% url 'app_create' %}">+ New app</a>
+        <a href="{% url 'ai_prompt' %}">✨ AI builder</a>
+        <a href="{% url 'ai_import' %}">⤓ Import blueprint</a>
+        <a href="{% url 'admin:auth_user_changelist' %}">Users</a>
+      {% endif %}
+      <a href="{% url 'password_change' %}">Change password</a>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="linkish" type="submit">Log out {{ user.get_username }}</button></form>
+    </div>
+  </nav>
+  <main class="main">
+    <button class="btn menu-toggle" type="button" onclick="document.getElementById('sidebar').classList.toggle('open')">☰ Menu</button>
+    <div class="crumbs">{% block crumbs %}{% endblock %}</div>
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}<div class="msg msg-{{ message.tags }}">{{ message }}</div>{% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="{% static 'builder/app.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

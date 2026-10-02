@@ -1,0 +1,64 @@
+{% extends 'builder/base.html' %}
+{% block title %}{% if row %}Edit {{ label }}{% else %}New row in {{ table.name }}{% endif %}{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> › <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> › <a href="{{ table.get_absolute_url }}">{{ table.name }}</a> ›{% endblock %}
+{% block content %}
+<h1>{% if row %}Edit {{ label }}{% else %}New row in {{ table.name }}{% endif %}</h1>
+<form method="post" class="form row-form">{% csrf_token %}
+  {% for w in widgets %}{% with f=w.field %}
+    <div class="form-row{% if w.error %} has-error{% endif %}" data-key="{{ f.key }}">
+      <div class="form-label">{{ f.name }}{% if f.required %}<span class="req">*</span>{% endif %}</div>
+      <div class="form-input">
+      {% if f.type == 'long_text' %}
+        <textarea name="{{ f.key }}" rows="4">{{ w.value }}</textarea>
+      {% elif f.type == 'number' %}
+        <input name="{{ f.key }}" value="{{ w.value }}" inputmode="decimal">
+      {% elif f.type == 'checkbox' %}
+        <label class="check"><input type="checkbox" name="{{ f.key }}" {% if w.value %}checked{% endif %}> {{ f.name }}</label>
+      {% elif f.type == 'date' %}
+        <input type="date" name="{{ f.key }}" value="{{ w.value }}">
+      {% elif f.type == 'select' %}
+        <select name="{{ f.key }}"><option value="">—</option>
+          {% for c in f.options.choices %}<option {% if c == w.value %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+      {% elif f.type == 'url' %}
+        <input type="text" name="{{ f.key }}" value="{{ w.value }}" placeholder="https://…">
+      {% elif f.type == 'email' %}
+        <input type="email" name="{{ f.key }}" value="{{ w.value }}">
+      {% elif f.type == 'link' %}
+        <div class="picker" data-name="{{ f.key }}" data-url="{{ w.search_url }}" data-exclude="{{ w.exclude }}"
+             data-multiple="{% if f.options.multiple %}1{% else %}0{% endif %}">
+          <div class="picked">{% for p in w.picked %}<span class="chip" data-id="{{ p.id }}">{{ p.label }}<input type="hidden" name="{{ f.key }}" value="{{ p.id }}"><button type="button" class="x" title="Remove">×</button></span>{% endfor %}</div>
+          <input type="search" class="picker-input" placeholder="Search {{ w.target.name|lower }}…" autocomplete="off">
+          <div class="picker-results" hidden></div>
+        </div>
+      {% elif f.type == 'attribute_values' %}
+        <div class="attr-values" data-name="{{ f.key }}" data-via="{{ f.options.via }}"
+             data-defs="{{ w.defs_json }}" data-values="{{ w.values_json }}"></div>
+      {% elif f.type == 'attribute_defs' %}
+        <table class="defs-editor" data-name="{{ f.key }}">
+          <thead><tr><th>Attribute</th><th>Hint / example</th><th>Required</th><th></th></tr></thead>
+          <tbody>
+            {% for d in w.defs %}
+            <tr><td><input name="{{ f.key }}__name" value="{{ d.name }}"></td><td><input name="{{ f.key }}__hint" value="{{ d.hint|default:'' }}"></td>
+              <td><select name="{{ f.key }}__req"><option value="">No</option><option value="1" {% if d.required %}selected{% endif %}>Yes</option></select></td>
+              <td><button type="button" class="btn small row-remove">×</button></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <button type="button" class="btn small defs-add" data-name="{{ f.key }}">+ Attribute</button>
+      {% else %}
+        <input name="{{ f.key }}" value="{{ w.value }}" {% if f.key == table.display_field and forloop.first %}autofocus{% endif %}>
+      {% endif %}
+      {% if w.error %}<div class="error">{{ w.error }}</div>{% endif %}
+      {% if f.help_text %}<div class="help">{{ f.help_text }}</div>{% endif %}
+      </div>
+    </div>
+  {% endwith %}{% endfor %}
+  {% if has_images and not row %}<p class="small muted">Add images after saving, on the row's page.</p>{% endif %}
+  <div class="form-actions">
+    <button class="btn primary" type="submit">Save</button>
+    {% if not row %}<button class="btn" type="submit" name="add_another" value="1">Save and add another</button>{% endif %}
+    <a class="btn" href="{% if row %}{{ row.get_absolute_url }}{% else %}{{ table.get_absolute_url }}{% endif %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'builder/base.html' %}
+{% block title %}New table{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> › <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> ›{% endblock %}
+{% block content %}
+<h1>New table in {{ app.name }}</h1>
+<form method="post" class="form narrow">{% csrf_token %}
+  <label>Name <input name="name" value="{{ data.name }}" required maxlength="100" autofocus placeholder="e.g. Suppliers"></label>
+  <label>Description <textarea name="description" rows="2">{{ data.description }}</textarea></label>
+  <p class="small muted">The table starts with a <b>Name</b> field. Add more fields from the table.</p>
+  <div class="form-actions"><button class="btn primary" type="submit">Create</button>
+    <a class="btn" href="{{ app.get_absolute_url }}">Cancel</a></div>
+</form>
+{% endblock %}

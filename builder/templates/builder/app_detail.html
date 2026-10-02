@@ -1,0 +1,29 @@
+{% extends 'builder/base.html' %}
+{% block title %}{{ app.name }}{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> ›{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{% if app.icon %}<span class="icon">{{ app.icon }}</span>{% endif %}{{ app.name }}</h1>
+  {% if user.is_staff %}
+  <div class="actions">
+    <a class="btn" href="{% url 'table_create' app.key %}">+ Table</a>
+    <a class="btn" href="{% url 'app_edit' app.key %}">Edit app</a>
+    <a class="btn" href="{% url 'app_export' app.key %}" title="Download this app's blueprint (structure only)">Export</a>
+    <a class="btn" href="{% url 'app_export' app.key %}?rows=1" title="Blueprint with all rows">Export with data</a>
+  </div>
+  {% endif %}
+</div>
+{% if app.description %}<p class="lead">{{ app.description|linebreaksbr }}</p>{% endif %}
+<div class="cards">
+  {% for t in tables %}
+    <a class="card" href="{{ t.get_absolute_url }}">
+      <div class="card-title">{{ t.name }}</div>
+      {% if t.description %}<p class="muted small">{{ t.description|truncatechars:160 }}</p>{% endif %}
+      <p class="small muted">{{ t.row_count }} row{{ t.row_count|pluralize }} · {{ t.field_count }} field{{ t.field_count|pluralize }}</p>
+    </a>
+  {% empty %}
+    <p class="muted">No tables yet.</p>
+  {% endfor %}
+</div>
+{% if user.is_staff %}<p class="danger-zone"><a href="{% url 'app_delete' app.key %}">Delete this app…</a></p>{% endif %}
+{% endblock %}

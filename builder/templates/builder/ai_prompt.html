@@ -1,0 +1,33 @@
+{% extends 'builder/base.html' %}
+{% block title %}AI builder{% endblock %}
+{% block content %}
+<h1>✨ Build with AI</h1>
+<ol class="steps">
+  <li>Describe what you want below and click <b>Make prompt</b>.</li>
+  <li>Copy the prompt (or download it) and give it to an AI: Copilot, ChatGPT, Claude…</li>
+  <li>Save the AI's answer as a file, or copy it, and bring it to <a href="{% url 'ai_import' %}">Import blueprint</a>. You see every change before anything happens.</li>
+</ol>
+
+<form method="post" class="form">{% csrf_token %}
+  <label>What should be added or changed?
+    <textarea name="request" rows="6" placeholder="e.g. Add a Suppliers table with name, website, contact email and phone, and let each part link to its suppliers.">{{ request_text }}</textarea>
+  </label>
+  {% if apps %}
+  <fieldset class="apps-pick"><legend>Tell the AI about these apps</legend>
+    {% for a in apps %}<label class="check"><input type="checkbox" name="apps" value="{{ a.key }}" {% if a.key in picked %}checked{% endif %}> {{ a.icon }} {{ a.name }}</label>{% endfor %}
+  </fieldset>
+  {% endif %}
+  <div class="form-actions">
+    <button class="btn primary" type="submit">Make prompt</button>
+    <button class="btn" type="submit" name="download" value="1">Download prompt as a file</button>
+  </div>
+</form>
+
+{% if prompt_text %}
+<h2>Your prompt</h2>
+<div class="form-actions"><button class="btn primary copy" type="button" data-target="prompt-text">Copy prompt</button>
+  <span class="small muted">{{ prompt_text|length }} characters. If the AI says it's too long, use <b>Download</b> and attach the file instead.</span></div>
+<textarea id="prompt-text" class="code" rows="18" readonly>{{ prompt_text }}</textarea>
+<p><a class="btn" href="{% url 'ai_import' %}">Next: import the AI's answer →</a></p>
+{% endif %}
+{% endblock %}

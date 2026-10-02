@@ -1,0 +1,83 @@
+{% extends 'builder/base.html' %}
+{% block title %}{{ table.name }}{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> › <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> ›{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ table.name }}</h1>
+  <div class="actions">
+    <a class="btn primary" href="{% url 'row_create' table.pk %}">+ New row</a>
+    {% if user.is_staff %}
+      <a class="btn" href="{% url 'field_create' table.pk %}?next={{ request.get_full_path|urlencode }}">+ Field</a>
+      <a class="btn" href="{% url 'table_settings' table.pk %}">Table settings</a>
+    {% endif %}
+  </div>
+</div>
+{% if table.description %}<p class="muted">{{ table.description }}</p>{% endif %}
+
+<div class="view-tabs">
+  {% for v in views %}
+    <a class="view-tab{% if v.pk == view.pk %} active{% endif %}" href="{{ v.get_absolute_url }}">{{ v.name }}</a>
+  {% endfor %}
+  {% if user.is_staff %}
+    <a class="view-tab add" href="{% url 'view_edit' view.pk %}" title="Columns, filters and sorting of this view">⚙ Edit view</a>
+    <a class="view-tab add" href="{% url 'view_create' table.pk %}">+ View</a>
+  {% endif %}
+</div>
+
+<form class="toolbar" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search {{ table.name|lower }}…">
+  <button class="btn" type="submit">Search</button>
+  {% if q %}<a class="btn" href="{{ request.path }}">Clear</a>{% endif %}
+  <span class="small muted">
+    {% for f in filters %}<span class="chip">{{ f }}</span>{% endfor %}
+    {% for s in sorts %}<span class="chip">sort: {{ s }}</span>{% endfor %}
+    {{ page.paginator.count }} row{{ page.paginator.count|pluralize }}
+  </span>
+</form>
+
+<div class="grid-wrap">
+<table class="grid" data-cell-url="{% url 'api_cell' 0 %}">
+  <thead><tr>
+    <th class="rownum">#</th>
+    {% for f in columns %}
+      <th title="{{ f.help_text }}">
+        <span>{{ f.name }}{% if f.required %}<span class="req">*</span>{% endif %}</span>
+        {% if user.is_staff %}<a class="col-edit" href="{% url 'field_edit' f.pk %}?next={{ request.get_full_path|urlencode }}" title="Edit field">✎</a>{% endif %}
+      </th>
+    {% endfor %}
+  </tr></thead>
+  <tbody>
+  {% for gr in grid_rows %}
+    <tr>
+      <td class="rownum"><a href="{{ gr.row.get_absolute_url }}" title="Open {{ gr.label }}">{{ gr.row.pk }}</a></td>
+      {% for c in gr.cells %}
+        {% if c.links is not None %}
+          <td class="cell-links">{% for label, url in c.links %}<a class="chip link" href="{{ url }}">{{ label }}</a>{% endfor %}</td>
+        {% elif c.field.type == 'images' %}
+          <td class="cell-image">{% if c.image %}<a href="{{ gr.row.get_absolute_url }}"><img src="{{ c.image.file.url }}" alt="" loading="lazy"></a>{% endif %}</td>
+        {% elif c.editable %}
+          <td class="cell editable type-{{ c.field.type }}" data-row="{{ gr.row.pk }}" data-field="{{ c.field.key }}"
+              data-type="{{ c.field.type }}" data-value="{{ c.value_json }}"
+              {% if c.field.type == 'select' %}data-choices="{{ c.field.options.choices|join:'|' }}"{% endif %}
+              title="Double-click to edit">{% if c.field.type == 'url' and c.text %}<a href="{{ c.text }}" target="_blank" rel="noopener">{{ c.text|truncatechars:40 }}</a>{% else %}{{ c.text }}{% endif %}</td>
+        {% else %}
+          <td class="cell">{{ c.text|truncatechars:120 }}</td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  {% empty %}
+    <tr><td class="empty" colspan="{{ columns|length|add:1 }}">No rows{% if q %} match "{{ q }}"{% endif %}. <a href="{% url 'row_create' table.pk %}">Add one</a>.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if page.has_other_pages %}
+<div class="pager">
+  {% if page.has_previous %}<a class="btn" href="?q={{ q|urlencode }}&page={{ page.previous_page_number }}">‹ Previous</a>{% endif %}
+  <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn" href="?q={{ q|urlencode }}&page={{ page.next_page_number }}">Next ›</a>{% endif %}
+</div>
+{% endif %}
+<p class="small muted">Double-click a cell to edit it. Click a row number to open the row.</p>
+{% endblock %}

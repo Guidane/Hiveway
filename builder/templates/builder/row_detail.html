@@ -1,0 +1,79 @@
+{% extends 'builder/base.html' %}
+{% block title %}{{ label }}{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> › <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> › <a href="{{ table.get_absolute_url }}">{{ table.name }}</a> ›{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ label }}{% if subtitle %} <span class="muted subtitle">{{ subtitle }}</span>{% endif %}</h1>
+  <div class="actions">
+    <a class="btn primary" href="{% url 'row_edit' row.pk %}">Edit</a>
+    <a class="btn" href="{% url 'row_delete' row.pk %}">Delete</a>
+  </div>
+</div>
+
+<div class="detail">
+  <dl class="fields">
+  {% for item in items %}{% with f=item.field %}
+    {% if f.type != 'images' %}
+      <dt title="{{ f.help_text }}">{{ f.name }}</dt>
+      <dd>
+        {% if f.type == 'link' %}
+          {% for label, sub, url in item.links %}<a class="chip link" href="{{ url }}" title="{{ sub }}">{{ label }}</a>{% empty %}<span class="muted">—</span>{% endfor %}
+        {% elif f.type == 'attribute_values' %}
+          {% if item.pairs %}<table class="attrs">{% for name, value in item.pairs %}<tr><th>{{ name }}</th><td>{{ value|urlize }}</td></tr>{% endfor %}</table>{% else %}<span class="muted">—</span>{% endif %}
+        {% elif f.type == 'attribute_defs' %}
+          {% if item.defs %}<table class="attrs">{% for d in item.defs %}<tr><th>{{ d.name }}{% if d.required %}<span class="req">*</span>{% endif %}</th><td class="muted">{{ d.hint }}</td></tr>{% endfor %}</table>{% else %}<span class="muted">—</span>{% endif %}
+        {% elif f.type == 'checkbox' %}
+          {% if item.value %}Yes{% else %}No{% endif %}
+        {% elif f.type == 'url' and item.text %}
+          <a href="{{ item.text }}" target="_blank" rel="noopener">{{ item.text }}</a>
+        {% elif f.type == 'email' and item.text %}
+          <a href="mailto:{{ item.text }}">{{ item.text }}</a>
+        {% elif f.type == 'long_text' %}
+          {{ item.text|linebreaksbr|default:'<span class="muted">—</span>' }}
+        {% else %}
+          {{ item.text|default:'—' }}
+        {% endif %}
+      </dd>
+    {% endif %}
+  {% endwith %}{% endfor %}
+  </dl>
+
+  {% for item in items %}{% if item.field.type == 'images' %}
+  <section class="panel">
+    <h2>{{ item.field.name }}</h2>
+    <div class="gallery">
+      {% for img in item.images %}
+        <figure>
+          <a href="{{ img.file.url }}" target="_blank"><img src="{{ img.file.url }}" alt="{{ img.caption }}" loading="lazy"></a>
+          <figcaption>
+            <form method="post" action="{% url 'image_action' img.pk %}" class="inline">{% csrf_token %}
+              <input name="caption" value="{{ img.caption }}" placeholder="Caption" maxlength="200">
+              <button class="btn small" name="action" value="caption">Save</button>
+              {% if not forloop.first %}<button class="btn small" name="action" value="cover" title="Show this one first">Make cover</button>{% else %}<span class="small muted">Cover</span>{% endif %}
+              <button class="btn small danger" name="action" value="delete" onclick="return confirm('Remove this image?')">Remove</button>
+            </form>
+          </figcaption>
+        </figure>
+      {% empty %}<p class="muted">No images yet.</p>{% endfor %}
+    </div>
+    <form method="post" enctype="multipart/form-data" action="{% url 'images_upload' row.pk item.field.pk %}" class="upload">{% csrf_token %}
+      <input type="file" name="images" accept="image/*" multiple required>
+      <button class="btn" type="submit">+ Add images</button>
+      <span class="small muted">JPEG, PNG, GIF, WebP… up to 20 MB each.</span>
+    </form>
+  </section>
+  {% endif %}{% endfor %}
+
+  {% for section in related %}
+  <section class="panel">
+    <h2>{{ section.heading }} <span class="muted small">({{ section.rows|length }})</span></h2>
+    {% if section.rows %}
+      <ul class="related">{% for label, sub, url in section.rows %}<li><a href="{{ url }}">{{ label }}</a>{% if sub %} <span class="muted">· {{ sub }}</span>{% endif %}</li>{% endfor %}</ul>
+    {% else %}<p class="muted small">None.</p>{% endif %}
+    <a class="small" href="{{ section.add_url }}">+ New row in {{ section.field.table.name }}</a>
+  </section>
+  {% endfor %}
+
+  <p class="small muted">Created {{ row.created_at|date:"Y-m-d H:i" }}{% if row.created_by %} by {{ row.created_by }}{% endif %} · updated {{ row.updated_at|date:"Y-m-d H:i" }}{% if row.updated_by %} by {{ row.updated_by }}{% endif %}</p>
+</div>
+{% endblock %}

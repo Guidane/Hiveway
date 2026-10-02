@@ -1,0 +1,45 @@
+{% extends 'builder/base.html' %}
+{% block title %}{{ table.name }} settings{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> › <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> › <a href="{{ table.get_absolute_url }}">{{ table.name }}</a> ›{% endblock %}
+{% block content %}
+<h1>{{ table.name }}: settings</h1>
+<p class="small muted">Key: <code>{{ table.ref }}</code> (used in blueprints; never changes)</p>
+
+<form method="post" class="form narrow">{% csrf_token %}
+  <label>Name <input name="name" value="{{ table.name }}" required maxlength="100"></label>
+  <label>Description <textarea name="description" rows="2">{{ table.description }}</textarea></label>
+  <label>Row name <select name="display_field"><option value="">(row number)</option>
+    {% for f in label_fields %}<option value="{{ f.key }}" {% if f.key == table.display_field %}selected{% endif %}>{{ f.name }}</option>{% endfor %}
+  </select><span class="help">Names a row in links, pickers and page titles.</span></label>
+  <label>Second line <select name="subtitle_field"><option value="">(none)</option>
+    {% for f in label_fields %}<option value="{{ f.key }}" {% if f.key == table.subtitle_field %}selected{% endif %}>{{ f.name }}</option>{% endfor %}
+  </select><span class="help">Shown next to the name in pickers and lists.</span></label>
+  <label>Nest rows by <select name="tree_field"><option value="">(not nested)</option>
+    {% for f in tree_fields %}<option value="{{ f.key }}" {% if f.key == table.tree_field %}selected{% endif %}>{{ f.name }}</option>{% endfor %}
+  </select><span class="help">A single link to this same table (e.g. Parent) makes rows nested: names show as "Hardware › Fasteners" and filters include sub-rows.</span></label>
+  <div class="form-actions"><button class="btn primary" type="submit">Save</button></div>
+</form>
+
+<h2>Fields</h2>
+<table class="list">
+  <thead><tr><th>Name</th><th>Key</th><th>Type</th><th></th><th></th></tr></thead>
+  <tbody>
+  {% for f in fields %}
+    <tr>
+      <td><a href="{% url 'field_edit' f.pk %}?next={{ request.path|urlencode }}">{{ f.name }}</a>{% if f.required %}<span class="req">*</span>{% endif %}{% if f.unique %} <span class="chip small">unique</span>{% endif %}</td>
+      <td><code>{{ f.key }}</code></td>
+      <td>{{ f.kind.label }}{% if f.type == 'link' %} → {{ f.options.target }}{% if f.options.symmetric %} (two-way){% endif %}{% endif %}</td>
+      <td class="nowrap">
+        <form method="post" action="{% url 'field_move' f.pk %}" class="inline">{% csrf_token %}
+          <button class="btn small" name="dir" value="up" {% if forloop.first %}disabled{% endif %}>↑</button>
+          <button class="btn small" name="dir" value="down" {% if forloop.last %}disabled{% endif %}>↓</button>
+        </form>
+      </td>
+      <td><a class="small danger-link" href="{% url 'field_delete' f.pk %}">Delete</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p><a class="btn" href="{% url 'field_create' table.pk %}?next={{ request.path|urlencode }}">+ Field</a></p>
+<p class="danger-zone"><a href="{% url 'table_delete' table.pk %}">Delete this table…</a></p>
+{% endblock %}

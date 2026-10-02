@@ -1,0 +1,36 @@
+{% extends 'builder/base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Apps</h1>
+  {% if user.is_staff %}<div class="actions"><a class="btn" href="{% url 'app_create' %}">+ New app</a><a class="btn" href="{% url 'ai_prompt' %}">✨ Build with AI</a></div>{% endif %}
+</div>
+<div class="cards">
+  {% for a in apps %}
+    <a class="card app-card" href="{{ a.get_absolute_url }}">
+      <div class="card-title">{% if a.icon %}<span class="icon big">{{ a.icon }}</span>{% endif %}{{ a.name }}</div>
+      {% if a.description %}<p class="muted">{{ a.description|truncatechars:140 }}</p>{% endif %}
+      <p class="small muted">{{ a.table_count }} table{{ a.table_count|pluralize }}</p>
+    </a>
+  {% empty %}
+    <p class="muted">No apps yet.{% if user.is_staff %} Install a ready-made one below, make one with <b>+ New app</b>, or let an AI design one with <b>✨ Build with AI</b>.{% endif %}</p>
+  {% endfor %}
+</div>
+
+{% if user.is_staff and library %}
+<h2>Ready-made apps</h2>
+<div class="cards">
+  {% for item in library %}
+    <div class="card">
+      <div class="card-title">{% if item.icon %}<span class="icon big">{{ item.icon }}</span>{% endif %}{{ item.title }}</div>
+      {% if item.description %}<p class="muted small">{{ item.description|truncatechars:220 }}</p>{% endif %}
+      {% if item.installed %}<p class="small ok">Installed</p>
+        <a class="btn small" href="{% url 'library_install' item.name %}">Check for updates</a>
+      {% else %}
+        <a class="btn primary" href="{% url 'library_install' item.name %}">Install…</a>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

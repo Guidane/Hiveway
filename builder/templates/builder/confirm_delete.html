@@ -1,0 +1,10 @@
+{% extends 'builder/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<p>{{ text }}</p>
+<form method="post">{% csrf_token %}
+  <button class="btn danger" type="submit">Delete</button>
+  <a class="btn" href="{{ cancel_url }}">Cancel</a>
+</form>
+{% endblock %}

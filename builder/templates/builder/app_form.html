@@ -1,0 +1,13 @@
+{% extends 'builder/base.html' %}
+{% block title %}{% if app %}Edit {{ app.name }}{% else %}New app{% endif %}{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> ›{% if app %} <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> ›{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if app %}Edit {{ app.name }}{% else %}New app{% endif %}</h1>
+<form method="post" class="form narrow">{% csrf_token %}
+  <label>Name <input name="name" value="{{ data.name }}" required maxlength="100" autofocus></label>
+  <label>Icon <input name="icon" value="{{ data.icon }}" maxlength="16" placeholder="An emoji, e.g. 📦"></label>
+  <label>Description <textarea name="description" rows="3">{{ data.description }}</textarea></label>
+  <div class="form-actions"><button class="btn primary" type="submit">Save</button>
+    <a class="btn" href="{% if app %}{{ app.get_absolute_url }}{% else %}{% url 'home' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

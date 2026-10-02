@@ -1,0 +1,59 @@
+{% extends 'builder/base.html' %}
+{% block title %}{% if view %}Edit view {{ view.name }}{% else %}New view{% endif %}{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> › <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> › <a href="{{ table.get_absolute_url }}">{{ table.name }}</a> ›{% endblock %}
+{% block content %}
+<h1>{% if view %}Edit view {{ view.name }}{% else %}New view of {{ table.name }}{% endif %}</h1>
+<form method="post" class="form view-form" data-fields="{{ field_meta }}" data-links="{{ link_choices }}">{% csrf_token %}
+  <label class="narrow">Name <input name="name" value="{{ view.name|default:'' }}" required maxlength="100" placeholder="e.g. Active parts"></label>
+
+  <h2>Columns</h2>
+  <p class="small muted">Tick the columns to show; use ↑ ↓ to order them.</p>
+  <ul class="column-list">
+    {% for f, shown in columns %}
+      <li><label class="check"><input type="checkbox" name="columns" value="{{ f.key }}" {% if shown %}checked{% endif %}> {{ f.name }}</label>
+        <span class="move"><button type="button" class="btn small up">↑</button><button type="button" class="btn small down">↓</button></span></li>
+    {% endfor %}
+  </ul>
+
+  <h2>Filters</h2>
+  <p class="small muted">Rows must match all of them.</p>
+  <div class="filter-rows">
+    {% for flt in filters %}
+      <div class="filter-row">
+        <select name="filter_field" class="filter-field"><option value="">—</option>
+          {% for f in fields %}{% if f.kind.filter_ops %}<option value="{{ f.key }}" {% if f.key == flt.field %}selected{% endif %}>{{ f.name }}</option>{% endif %}{% endfor %}
+        </select>
+        <select name="filter_op" class="filter-op" data-current="{{ flt.op|default:'' }}"></select>
+        <span class="filter-value" data-current="{{ flt.value|default_if_none:'' }}"><input name="filter_value" value="{{ flt.value|default_if_none:'' }}"></span>
+        <button type="button" class="btn small row-remove">×</button>
+      </div>
+    {% endfor %}
+  </div>
+  <button type="button" class="btn small" id="add-filter">+ Filter</button>
+
+  <h2>Sort</h2>
+  <div class="sort-rows">
+    {% for s in sorts %}
+      <div class="sort-row">
+        <select name="sort_field"><option value="">—</option>
+          {% for f in fields %}{% if f.kind.sortable and f.kind.stored %}<option value="{{ f.key }}" {% if f.key == s.field %}selected{% endif %}>{{ f.name }}</option>{% endif %}{% endfor %}
+        </select>
+        <select name="sort_dir"><option value="asc">A → Z, 1 → 9</option><option value="desc" {% if s.dir == 'desc' %}selected{% endif %}>Z → A, 9 → 1</option></select>
+      </div>
+    {% endfor %}
+  </div>
+  <button type="button" class="btn small" id="add-sort">+ Sort</button>
+
+  <label class="narrow">Rows per page <input name="page_size" value="{{ config.page_size|default:50 }}" inputmode="numeric"></label>
+
+  <div class="form-actions">
+    <button class="btn primary" type="submit">Save view</button>
+    <a class="btn" href="{% if view %}{{ view.get_absolute_url }}{% else %}{{ table.get_absolute_url }}{% endif %}">Cancel</a>
+  </div>
+</form>
+{% if view %}
+<form method="post" action="{% url 'view_delete' view.pk %}" class="danger-zone">{% csrf_token %}
+  <button class="linkish danger-link" onclick="return confirm('Delete this view? Rows are not affected.')">Delete this view</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'builder/base.html' %}
+{% block title %}{% if field %}Edit {{ field.name }}{% else %}New field{% endif %}{% endblock %}
+{% block crumbs %}<a href="{% url 'home' %}">Apps</a> › <a href="{{ app.get_absolute_url }}">{{ app.name }}</a> › <a href="{{ table.get_absolute_url }}">{{ table.name }}</a> ›{% endblock %}
+{% block content %}
+<h1>{% if field %}Edit field {{ field.name }}{% else %}New field in {{ table.name }}{% endif %}</h1>
+{% if field %}<p class="small muted">Key: <code>{{ field.key }}</code></p>{% endif %}
+<form method="post" class="form narrow field-form">{% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <label>Name <input name="name" value="{{ current.name }}" required maxlength="100" autofocus></label>
+  <label>Type <select name="type" id="field-type">
+    {% for key, kind in types %}<option value="{{ key }}" {% if key == current.type %}selected{% endif %} data-unique="{{ kind.can_unique|yesno:'1,0' }}" data-required="{{ kind.can_required|yesno:'1,0' }}">{{ kind.label }}</option>{% endfor %}
+  </select></label>
+  {% for key, kind in types %}<p class="help type-help" data-type="{{ key }}" hidden>{{ kind.description }}</p>{% endfor %}
+
+  <div class="opts" data-type="text long_text url email" hidden>
+    <label>Default value <input name="opt_{{ current.type }}_default" class="opt-default" value="{{ opts.default|default:'' }}"></label>
+  </div>
+  <div class="opts" data-type="number" hidden>
+    <label>Decimal places <input name="opt_number_decimals" value="{{ opts.decimals|default_if_none:'' }}" inputmode="numeric" placeholder="any"></label>
+    <label>Default value <input name="opt_number_default" value="{{ opts.default|default_if_none:'' }}"></label>
+  </div>
+  <div class="opts" data-type="checkbox" hidden>
+    <label class="check"><input type="checkbox" name="opt_checkbox_default" {% if opts.default %}checked{% endif %}> Ticked for new rows</label>
+  </div>
+  <div class="opts" data-type="select" hidden>
+    <label>Choices, one per line <textarea name="opt_select_choices" rows="5">{{ opts.choices_text|default:'' }}</textarea></label>
+    <label>Default <input name="opt_select_default" value="{{ opts.default|default:'' }}"></label>
+  </div>
+  <div class="opts" data-type="link" hidden>
+    <label>Links to rows of <select name="opt_link_target">
+      {% for t in tables %}<option value="{{ t.ref }}" {% if t.ref == opts.target or not opts.target and t.pk == table.pk %}selected{% endif %}>{{ t.app.name }} › {{ t.name }}</option>{% endfor %}
+    </select></label>
+    <label class="check"><input type="checkbox" name="opt_link_multiple" {% if opts.multiple or not field and opts.multiple is None %}checked{% endif %}> Can link to several rows</label>
+    <label class="check"><input type="checkbox" name="opt_link_symmetric" {% if opts.symmetric %}checked{% endif %}> Two-way (only for links to this same table): if A links to B, B links to A</label>
+    <label>Heading on the linked row's page <input name="opt_link_related_name" value="{{ opts.related_name|default:'' }}" placeholder="e.g. Parts"></label>
+  </div>
+  <div class="opts" data-type="attribute_values" hidden>
+    <label>Take the attribute list from the row linked by <select name="opt_attribute_values_via">
+      {% for f in via_fields %}<option value="{{ f.key }}" {% if f.key == opts.via %}selected{% endif %}>{{ f.name }}</option>{% empty %}<option value="">(add a single link field first)</option>{% endfor %}
+    </select></label>
+    <label>Its attribute list field <select name="opt_attribute_values_defs">
+      {% for f in defs_fields %}<option value="{{ f.key }}" {% if f.key == opts.defs %}selected{% endif %}>{{ f.table.name }} › {{ f.name }}</option>{% empty %}<option value="">(add an Attribute list field to the linked table first)</option>{% endfor %}
+    </select></label>
+  </div>
+
+  <label class="check" id="required-box"><input type="checkbox" name="required" {% if current.required %}checked{% endif %}> Required</label>
+  <label class="check" id="unique-box"><input type="checkbox" name="unique" {% if current.unique %}checked{% endif %}> Unique (no two rows may have the same value)</label>
+  <label>Help text <input name="help" value="{{ current.help }}" maxlength="300"></label>
+  <div class="form-actions">
+    <button class="btn primary" type="submit">Save</button>
+    <a class="btn" href="{{ next|default:table.get_absolute_url }}">Cancel</a>
+    {% if field %}<a class="danger-link" href="{% url 'field_delete' field.pk %}">Delete field…</a>{% endif %}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'builder/base.html' %}
+{% block title %}Import blueprint{% endblock %}
+{% block content %}
+<h1>⤓ Import blueprint</h1>
+
+{% if result %}
+  {% if source %}<p class="muted">From <b>{{ source }}</b></p>{% endif %}
+  {% if result.notes %}<div class="msg msg-info"><b>Notes from the blueprint:</b> {{ result.notes|linebreaksbr }}</div>{% endif %}
+  {% if result.ok %}
+    {% with changes=result.summary %}
+    {% if changes %}
+      <h2>This will change</h2>
+      <ul class="changes">{% for c in changes %}<li>{{ c }}</li>{% endfor %}</ul>
+      <form method="post" action="{% url 'ai_import' %}">{% csrf_token %}
+        <input type="hidden" name="action" value="apply">
+        <textarea name="blueprint_json" hidden>{{ blueprint_json }}</textarea>
+        <button class="btn primary" type="submit">Apply these changes</button>
+        <a class="btn" href="{% url 'ai_import' %}">Cancel</a>
+      </form>
+      <p class="small muted">Blueprints never delete anything.</p>
+    {% else %}
+      <p class="msg msg-success">Nothing to change: everything in this blueprint is already in place.</p>
+    {% endif %}
+    {% endwith %}
+  {% else %}
+    <h2>The blueprint has problems</h2>
+    <p>Nothing was changed. Copy the text below and send it back to the AI; it will send a corrected blueprint.</p>
+    <ul class="errors">{% for e in result.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    <div class="form-actions"><button class="btn primary copy" type="button" data-target="errors-for-ai">Copy errors for the AI</button></div>
+    <textarea id="errors-for-ai" class="code" rows="8" readonly>{{ result.errors_for_ai }}</textarea>
+  {% endif %}
+  <details><summary>Show the blueprint</summary><pre class="code">{{ blueprint_json }}</pre></details>
+  <hr>
+{% endif %}
+
+{% if parse_error %}
+  <div class="msg msg-error">{{ parse_error }}</div>
+{% endif %}
+
+<h2>{% if result or parse_error %}Try another{% else %}Bring in the AI's answer{% endif %}</h2>
+<form method="post" enctype="multipart/form-data" class="form" action="{% url 'ai_import' %}">{% csrf_token %}
+  <label>Upload the file (.json, .txt or .md: the whole AI answer is fine)
+    <input type="file" name="file" accept=".json,.txt,.md,application/json,text/plain">
+  </label>
+  <p class="muted small">…or paste the answer:</p>
+  <textarea name="text" rows="10" class="code" placeholder='{"osmia_blueprint": 1, "apps": [...]}'>{% if not result %}{{ text|default:'' }}{% endif %}</textarea>
+  <div class="form-actions"><button class="btn primary" type="submit">Preview changes</button></div>
+</form>
+<p class="small muted">Need a prompt for the AI? Use <a href="{% url 'ai_prompt' %}">✨ AI builder</a>.</p>
+{% endblock %}
