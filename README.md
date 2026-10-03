@@ -1,4 +1,4 @@
-# Osmia v2
+# Hiveway
 
 A self-hosted no-code database in the spirit of NocoDB, built on Django. Staff users build
 **apps** in the browser: tables, fields (text, numbers, selects, links between rows, images,
@@ -6,13 +6,13 @@ per-category attributes, ...) and **views** (saved grids with columns, filters a
 Everyone else works with the data: grids with inline editing, row pages and forms.
 
 Everything that is built is described by **blueprints** (JSON). The builder pages, the AI
-import and the ready-made apps all apply blueprints, so an AI can extend Osmia the same way a
+import and the ready-made apps all apply blueprints, so an AI can extend Hiveway the same way a
 person does.
 
 ## Quick start (Windows PowerShell)
 
 ```powershell
-cd "C:\python scripts\osmia-v2"
+cd "C:\python scripts\Hiveway"
 python -m venv .venv                      # skip if .venv exists
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python manage.py migrate
@@ -59,11 +59,11 @@ Not included from the old Osmia: stock, tools, the Mouser lookup and the other m
 2. Give it to any AI (Copilot, ChatGPT, Claude, ...). Too long to paste? **Download** it and attach
    the file.
 3. Sidebar → **⤓ Import blueprint**: upload the AI's answer (a .json, .txt or .md file, or the
-   whole answer pasted in). Osmia shows every change first; **Apply** makes them.
+   whole answer pasted in). Hiveway shows every change first; **Apply** makes them.
 4. Problems? Nothing is changed. **Copy errors for the AI**, send them back, import the answer.
 
 Blueprints never delete anything. **Export** on an app page downloads its blueprint (with or
-without data) for backups or for moving an app to another Osmia.
+without data) for backups or for moving an app to another Hiveway.
 
 ## Project layout
 
@@ -88,7 +88,7 @@ AI_GUIDE.md      the blueprint format, given to AIs in every prompt
 
 ## Settings
 
-Environment variables: `OSMIA_SECRET_KEY`, `OSMIA_DEBUG=0` and `OSMIA_ALLOWED_HOSTS` for real use;
-`OSMIA_DB_PATH` (default `db.sqlite3`) and `OSMIA_MEDIA_ROOT` (default `media/`, the uploaded
+Environment variables: `HIVEWAY_SECRET_KEY`, `HIVEWAY_DEBUG=0` and `HIVEWAY_ALLOWED_HOSTS` for real use;
+`HIVEWAY_DB_PATH` (default `db.sqlite3`) and `HIVEWAY_MEDIA_ROOT` (default `media/`, the uploaded
 images). Back up both before updating. For production run `manage.py collectstatic` and serve
 with a WSGI server (e.g. waitress).

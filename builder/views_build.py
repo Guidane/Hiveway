@@ -17,7 +17,7 @@ from .models import App, Field, Table, View
 
 
 def _apply(request, apps):
-    result = blueprint.apply({'osmia_blueprint': blueprint.VERSION, 'apps': apps}, user=request.user)
+    result = blueprint.apply({'hiveway_blueprint': blueprint.VERSION, 'apps': apps}, user=request.user)
     for error in result.errors:
         messages.error(request, error)
     return result.ok

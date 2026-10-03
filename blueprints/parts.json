@@ -1,5 +1,5 @@
 {
- "osmia_blueprint": 1,
+ "hiveway_blueprint": 1,
  "notes": "The parts catalogue, as in Osmia: parts with a part number, description, unit and images, in nested categories (e.g. Hardware > Fasteners). Each category lists the attributes its parts have (thread, material, ...); sub-categories inherit their parents' attributes. Parts list the parts they mate with (two-way), the parts they accept (a housing accepts its crimp contacts; the contact shows the housing under Fits into), and can be archived.",
  "apps": [
   {

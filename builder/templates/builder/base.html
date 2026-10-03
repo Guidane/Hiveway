@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Osmia{% endblock %} · Osmia</title>
+  <title>{% block title %}Hiveway{% endblock %} · Hiveway</title>
   <link rel="stylesheet" href="{% static 'builder/app.css' %}">
   <link rel="icon" href="{% static 'builder/icon.svg' %}" type="image/svg+xml">
 </head>
 <body>
 <div class="layout">
   <nav class="sidebar" id="sidebar">
-    <a class="brand" href="{% url 'home' %}">Osmia</a>
+    <a class="brand" href="{% url 'home' %}">Hiveway</a>
     {% for a in sidebar_apps %}
       <div class="nav-app{% if app and app.pk == a.pk %} current{% endif %}">
         <a class="nav-app-name" href="{{ a.get_absolute_url }}">{% if a.icon %}<span class="icon">{{ a.icon }}</span>{% endif %}{{ a.name }}</a>

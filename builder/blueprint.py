@@ -49,7 +49,7 @@ class Result:
 
     def errors_for_ai(self):
         lines = '\n'.join(f'- {e}' for e in self.errors)
-        return ('Osmia could not apply your blueprint. Nothing was changed. Fix these problems and send the '
+        return ('Hiveway could not apply your blueprint. Nothing was changed. Fix these problems and send the '
                 f'whole corrected blueprint again as one ```json block:\n{lines}')
 
 
@@ -80,7 +80,7 @@ def parse_text(text):
         raise ValueError('The file or text is empty.')
     candidates = [text]
     blocks = re.findall(r'```[a-zA-Z]*[ \t]*\r?\n(.*?)```', text, re.S)
-    blocks.sort(key=lambda b: ('osmia_blueprint' not in b, -len(b)))
+    blocks.sort(key=lambda b: ('hiveway_blueprint' not in b, -len(b)))
     candidates += blocks
     start, end = text.find('{'), text.rfind('}')
     if 0 <= start < end:
@@ -96,7 +96,7 @@ def parse_text(text):
             return data
     if last_error:
         raise ValueError(f'The JSON is not valid: {last_error}. Ask the AI for the blueprint again as one ```json block.')
-    raise ValueError('No blueprint found. It should be JSON starting with {"osmia_blueprint": 1, ...}.')
+    raise ValueError('No blueprint found. It should be JSON starting with {"hiveway_blueprint": 1, ...}.')
 
 
 def _text(value, limit):
@@ -157,9 +157,9 @@ class _Importer:
     def run(self, data):
         if not isinstance(data, dict):
             return self.error('', 'The blueprint must be a JSON object.')
-        if data.get('osmia_blueprint') != VERSION:
-            return self.error('', f'Put "osmia_blueprint": {VERSION} at the top of the JSON.')
-        self.check_keys(data, {'osmia_blueprint', 'notes', 'apps', 'rows'}, 'blueprint')
+        if data.get('hiveway_blueprint') != VERSION:
+            return self.error('', f'Put "hiveway_blueprint": {VERSION} at the top of the JSON.')
+        self.check_keys(data, {'hiveway_blueprint', 'notes', 'apps', 'rows'}, 'blueprint')
         self.result.notes = str(data.get('notes') or '').strip()
 
         # Apps and tables first, so links can point at tables made in this same blueprint.
@@ -514,7 +514,7 @@ class _Importer:
 def export(apps=None, include_rows=False):
     """A blueprint of ``apps`` (all when None); importing it changes nothing."""
     apps = list(apps if apps is not None else App.objects.all())
-    out = {'osmia_blueprint': VERSION, 'apps': []}
+    out = {'hiveway_blueprint': VERSION, 'apps': []}
     rows_out = []
     for app in apps:
         adef = {'key': app.key, 'name': app.name}

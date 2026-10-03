@@ -21,7 +21,7 @@ def process(upload):
         image = Image.open(upload)
         image.load()
     except (UnidentifiedImageError, OSError):
-        raise BadImage(f'{upload.name} is not an image Osmia can read.')
+        raise BadImage(f'{upload.name} is not an image Hiveway can read.')
     image = ImageOps.exif_transpose(image)
     image.thumbnail((MAX_SIDE, MAX_SIDE))
     buffer = BytesIO()

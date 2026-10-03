@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Log in · Osmia</title>
+  <title>Log in · Hiveway</title>
   <link rel="stylesheet" href="{% static 'builder/app.css' %}">
   <link rel="icon" href="{% static 'builder/icon.svg' %}" type="image/svg+xml">
 </head>
 <body class="login-page">
 <form method="post" class="form login-box">{% csrf_token %}
-  <h1>Osmia</h1>
+  <h1>Hiveway</h1>
   {% if form.errors %}<div class="msg msg-error">Wrong username or password.</div>{% endif %}
   <label>Username <input name="username" autofocus required autocomplete="username"></label>
   <label>Password <input type="password" name="password" required autocomplete="current-password"></label>

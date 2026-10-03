@@ -37,7 +37,7 @@ class BlueprintTests(TestCase):
         self.assertEqual(result.summary(), [])
 
     def test_dry_run_and_errors_change_nothing(self):
-        bp = {'osmia_blueprint': 1, 'apps': [{'key': 'shop', 'tables': [{'key': 'items', 'fields': [
+        bp = {'hiveway_blueprint': 1, 'apps': [{'key': 'shop', 'tables': [{'key': 'items', 'fields': [
             {'key': 'name', 'type': 'text'}]}]}]}
         result = blueprint.apply(bp, dry_run=True)
         self.assertTrue(result.ok)
@@ -51,7 +51,7 @@ class BlueprintTests(TestCase):
         self.assertIn('Nothing was changed', result.errors_for_ai())
 
     def test_bad_link_target_and_unknown_properties_are_reported(self):
-        result = blueprint.apply({'osmia_blueprint': 1, 'colour': 'red', 'apps': [{'key': 'a', 'tables': [
+        result = blueprint.apply({'hiveway_blueprint': 1, 'colour': 'red', 'apps': [{'key': 'a', 'tables': [
             {'key': 't', 'fields': [{'key': 'other', 'type': 'link', 'options': {'target': 'a.missing'}}]}]}]})
         self.assertFalse(result.ok)
         text = ' '.join(result.errors)
@@ -61,7 +61,7 @@ class BlueprintTests(TestCase):
     def test_type_change_refused_once_table_has_rows(self):
         _, parts = install_parts(self)
         records.save_row(parts, {'part_number': 'P1'})
-        bp = {'osmia_blueprint': 1, 'apps': [{'key': 'parts', 'tables': [{'key': 'parts', 'fields': [
+        bp = {'hiveway_blueprint': 1, 'apps': [{'key': 'parts', 'tables': [{'key': 'parts', 'fields': [
             {'key': 'unit', 'type': 'number'}]}]}]}
         result = blueprint.apply(bp)
         self.assertFalse(result.ok)
@@ -71,14 +71,14 @@ class BlueprintTests(TestCase):
     def test_new_field_backfills_default(self):
         _, parts = install_parts(self)
         row = records.save_row(parts, {'part_number': 'P1'})
-        blueprint.apply({'osmia_blueprint': 1, 'apps': [{'key': 'parts', 'tables': [{'key': 'parts', 'fields': [
+        blueprint.apply({'hiveway_blueprint': 1, 'apps': [{'key': 'parts', 'tables': [{'key': 'parts', 'fields': [
             {'key': 'stocked', 'type': 'checkbox', 'options': {'default': True}}]}]}]})
         row.refresh_from_db()
         self.assertIs(row.data['stocked'], True)
 
     def test_rows_with_refs_names_and_attributes(self):
         categories, parts = install_parts(self)
-        result = blueprint.apply({'osmia_blueprint': 1, 'rows': [
+        result = blueprint.apply({'hiveway_blueprint': 1, 'rows': [
             {'table': 'parts.categories', 'ref': 'hw', 'values': {'name': 'Hardware', 'attributes': [{'name': 'Material'}]}},
             {'table': 'parts.categories', 'ref': 'fa', 'values': {'name': 'Fasteners', 'parent': '@hw',
                                                                   'attributes': [{'name': 'Thread', 'required': True}]}},
@@ -90,15 +90,15 @@ class BlueprintTests(TestCase):
         self.assertEqual(part.data['attributes'], {'Thread': 'M3', 'Material': 'Steel'})
         self.assertIn('hardware > fasteners', part.search_text)
         # Importing the same rows again updates them instead of adding more.
-        again = blueprint.apply({'osmia_blueprint': 1, 'rows': [
+        again = blueprint.apply({'hiveway_blueprint': 1, 'rows': [
             {'table': 'parts.parts', 'values': {'part_number': 'm3-12', 'description': 'Screw'}}]})
         self.assertTrue(again.ok, again.errors)
         self.assertEqual(parts.rows.count(), 1)
 
     def test_parse_text_finds_json_in_an_ai_answer(self):
-        answer = 'Sure! Here it is:\n\n```json\n{"osmia_blueprint": 1, "apps": []}\n```\nEnjoy.'
-        self.assertEqual(blueprint.parse_text(answer), {'osmia_blueprint': 1, 'apps': []})
-        self.assertEqual(blueprint.parse_text('﻿{"osmia_blueprint": 1}'), {'osmia_blueprint': 1})
+        answer = 'Sure! Here it is:\n\n```json\n{"hiveway_blueprint": 1, "apps": []}\n```\nEnjoy.'
+        self.assertEqual(blueprint.parse_text(answer), {'hiveway_blueprint': 1, 'apps': []})
+        self.assertEqual(blueprint.parse_text('﻿{"hiveway_blueprint": 1}'), {'hiveway_blueprint': 1})
         with self.assertRaises(ValueError):
             blueprint.parse_text('no json here')
 
@@ -270,7 +270,7 @@ class PageTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_import_upload_preview_then_apply(self):
-        answer = ('Here you go:\n```json\n' + json.dumps({'osmia_blueprint': 1, 'notes': 'Added datasheets.', 'apps': [
+        answer = ('Here you go:\n```json\n' + json.dumps({'hiveway_blueprint': 1, 'notes': 'Added datasheets.', 'apps': [
             {'key': 'parts', 'tables': [{'key': 'parts', 'fields': [{'key': 'datasheet', 'name': 'Datasheet',
                                                                       'type': 'url'}]}]}]}) + '\n```')
         upload = SimpleUploadedFile('answer.md', answer.encode(), content_type='text/markdown')
@@ -284,13 +284,13 @@ class PageTests(TestCase):
         self.assertTrue(self.parts.fields.filter(key='datasheet').exists())
 
     def test_import_errors_offer_text_for_the_ai(self):
-        response = self.client.post(reverse('ai_import'), {'text': '{"osmia_blueprint": 1, "apps": [{"key": "Bad Key"}]}'})
+        response = self.client.post(reverse('ai_import'), {'text': '{"hiveway_blueprint": 1, "apps": [{"key": "Bad Key"}]}'})
         self.assertContains(response, 'Copy errors for the AI')
 
     def test_prompt_contains_guide_setup_and_request(self):
         response = self.client.post(reverse('ai_prompt'), {'request': 'Add suppliers', 'apps': ['parts']})
         prompt = response.context['prompt_text']
-        self.assertIn('Osmia blueprint guide', prompt)
+        self.assertIn('Hiveway blueprint guide', prompt)
         self.assertIn('"part_number"', prompt)
         self.assertIn('Add suppliers', prompt)
 

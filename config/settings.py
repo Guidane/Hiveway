@@ -3,9 +3,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('OSMIA_SECRET_KEY', 'dev-only-insecure-key-change-me')
-DEBUG = os.environ.get('OSMIA_DEBUG', '1') == '1'
-ALLOWED_HOSTS = [h for h in os.environ.get('OSMIA_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h]
+SECRET_KEY = os.environ.get('HIVEWAY_SECRET_KEY', 'dev-only-insecure-key-change-me')
+DEBUG = os.environ.get('HIVEWAY_DEBUG', '1') == '1'
+ALLOWED_HOSTS = [h for h in os.environ.get('HIVEWAY_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -50,7 +50,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': Path(os.environ.get('OSMIA_DB_PATH', BASE_DIR / 'db.sqlite3')),
+        'NAME': Path(os.environ.get('HIVEWAY_DB_PATH', BASE_DIR / 'db.sqlite3')),
     }
 }
 
@@ -68,7 +68,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = Path(os.environ.get('OSMIA_MEDIA_ROOT', BASE_DIR / 'media'))
+MEDIA_ROOT = Path(os.environ.get('HIVEWAY_MEDIA_ROOT', BASE_DIR / 'media'))
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
@@ -79,6 +79,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
 
 # Ready-made blueprints offered on the home page (e.g. Parts).
-OSMIA_BLUEPRINT_DIR = BASE_DIR / 'blueprints'
+HIVEWAY_BLUEPRINT_DIR = BASE_DIR / 'blueprints'
 # Instructions for AI assistants, put at the top of every AI prompt.
-OSMIA_AI_GUIDE = BASE_DIR / 'AI_GUIDE.md'
+HIVEWAY_AI_GUIDE = BASE_DIR / 'AI_GUIDE.md'

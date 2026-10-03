@@ -1,9 +1,9 @@
 """AI round trip and blueprint files.
 
-1. AI builder: the user describes what they want; Osmia makes a prompt from
+1. AI builder: the user describes what they want; Hiveway makes a prompt from
    AI_GUIDE.md + the current setup (as a blueprint) + the request.
 2. The user gives the prompt to any AI (Copilot, ChatGPT, Claude, ...).
-3. Import: the user uploads the AI's answer (or pastes it); Osmia shows what
+3. Import: the user uploads the AI's answer (or pastes it); Hiveway shows what
    would change (a dry run) and applies it when the user confirms.
 """
 import json
@@ -24,7 +24,7 @@ MAX_IMPORT = 5 * 1024 * 1024
 
 def library():
     """Ready-made blueprints in blueprints/, with whether they are installed."""
-    folder = Path(settings.OSMIA_BLUEPRINT_DIR)
+    folder = Path(settings.HIVEWAY_BLUEPRINT_DIR)
     out = []
     for path in sorted(folder.glob('*.json')) if folder.is_dir() else []:
         try:
@@ -43,7 +43,7 @@ def library():
 
 def guide_text():
     try:
-        return Path(settings.OSMIA_AI_GUIDE).read_text(encoding='utf-8')
+        return Path(settings.HIVEWAY_AI_GUIDE).read_text(encoding='utf-8')
     except OSError:
         return ''
 
@@ -52,7 +52,7 @@ def build_prompt(request_text, apps=None):
     current = json.dumps(blueprint.export(apps), indent=1, ensure_ascii=False)
     return (
         f'{guide_text().strip()}\n\n'
-        '# The current Osmia setup\n\n'
+        '# The current Hiveway setup\n\n'
         'This is everything that exists now, as a blueprint. Only add or change what the request needs; '
         'what you leave out stays as it is.\n\n'
         f'```json\n{current}\n```\n\n'
@@ -60,7 +60,7 @@ def build_prompt(request_text, apps=None):
         f'{request_text.strip()}\n\n'
         '# Your answer\n\n'
         'Reply with ONE ```json block holding the blueprint (it may also be given as a file named '
-        'something.osmia.json). Put anything the user should know, or anything you could not do with the '
+        'something.hiveway.json). Put anything the user should know, or anything you could not do with the '
         'blueprint format, in "notes".\n'
     )
 
@@ -78,7 +78,7 @@ def prompt(request):
             prompt_text = build_prompt(request_text, [a for a in apps if a.key in picked])
             if 'download' in request.POST:
                 response = HttpResponse(prompt_text, content_type='text/plain; charset=utf-8')
-                response['Content-Disposition'] = 'attachment; filename="osmia-prompt.txt"'
+                response['Content-Disposition'] = 'attachment; filename="hiveway-prompt.txt"'
                 return response
     return render(request, 'builder/ai_prompt.html', {
         'apps': apps, 'picked': picked, 'request_text': request_text, 'prompt_text': prompt_text,
@@ -146,8 +146,8 @@ def import_view(request):
 
 @staff_required
 def library_install(request, name):
-    path = Path(settings.OSMIA_BLUEPRINT_DIR) / f'{name}.json'
-    if not path.is_file() or path.parent.resolve() != Path(settings.OSMIA_BLUEPRINT_DIR).resolve():
+    path = Path(settings.HIVEWAY_BLUEPRINT_DIR) / f'{name}.json'
+    if not path.is_file() or path.parent.resolve() != Path(settings.HIVEWAY_BLUEPRINT_DIR).resolve():
         raise Http404('No such blueprint.')
     return _preview(request, path.read_text(encoding='utf-8'), source=path.name)
 
@@ -156,7 +156,7 @@ def library_install(request, name):
 def export(request, key=None):
     apps = [get_object_or_404(App, key=key)] if key else None
     data = blueprint.export(apps, include_rows=request.GET.get('rows') == '1')
-    name = slugify(key or 'osmia') + ('-with-data' if request.GET.get('rows') == '1' else '') + '.osmia.json'
+    name = slugify(key or 'hiveway') + ('-with-data' if request.GET.get('rows') == '1' else '') + '.hiveway.json'
     response = HttpResponse(json.dumps(data, indent=1, ensure_ascii=False), content_type='application/json')
     response['Content-Disposition'] = f'attachment; filename="{name}"'
     return response

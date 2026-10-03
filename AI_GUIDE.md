@@ -1,8 +1,8 @@
-# Osmia blueprint guide (for AI assistants)
+# Hiveway blueprint guide (for AI assistants)
 
-You are helping a user extend **Osmia**, a self-hosted no-code database app (similar to NocoDB).
+You are helping a user extend **Hiveway**, a self-hosted no-code database app (similar to NocoDB).
 Users build **apps**; an app holds **tables**; a table has **fields** (columns) and **views**
-(saved grids). You make changes by writing a **blueprint**: one JSON document that Osmia
+(saved grids). You make changes by writing a **blueprint**: one JSON document that Hiveway
 previews to the user and then applies. You never write code; everything is expressed in the
 blueprint format below.
 
@@ -13,7 +13,7 @@ blueprint format below.
 - Properties you leave out keep their current value. So to change one thing, send only the
   keys that lead to it plus the property you change (see "Changing things" below).
 - **Nothing is ever deleted** by a blueprint. If the user wants something removed, say so in
-  `notes` and tell them to delete it in Osmia (staff users have Delete links).
+  `notes` and tell them to delete it in Hiveway (staff users have Delete links).
 - Keys never change after creation. Keys use lower-case letters, digits and single underscores,
   start with a letter, and are at most 50 characters: `part_number`, `suppliers`, `po_lines`.
 - The whole blueprint is checked first. If anything is wrong, nothing is changed and the user
@@ -23,7 +23,7 @@ blueprint format below.
 
 ```json
 {
-  "osmia_blueprint": 1,
+  "hiveway_blueprint": 1,
   "notes": "Short explanation for the user: what you did, anything you could not do.",
   "apps": [ ...app... ],
   "rows": [ ...row... ]
@@ -146,7 +146,7 @@ Notes on types:
 To add a field to an existing table, send just the keys that lead to it:
 
 ```json
-{"osmia_blueprint": 1,
+{"hiveway_blueprint": 1,
  "apps": [{"key": "parts", "tables": [{"key": "parts", "fields": [
    {"key": "datasheet", "name": "Datasheet", "type": "url"}
  ]}]}]}
@@ -159,7 +159,7 @@ ones. To show a new field in a view that lists `columns`, resend that view's `co
 
 ```json
 {
-  "osmia_blueprint": 1,
+  "hiveway_blueprint": 1,
   "notes": "Added a Suppliers table and a Suppliers link on parts. Each supplier's page lists its parts.",
   "apps": [
     {"key": "parts", "tables": [
@@ -186,10 +186,10 @@ ones. To show a new field in a view that lists `columns`, resend that view's `co
 The blueprint format covers apps, tables, fields, views and rows. Calculations (formulas),
 automations ("when X happens, do Y"), custom page layouts, permissions per table and charts do
 not exist yet. If the request needs them, build what the format allows and explain the rest in
-`notes`, so the user can ask for that feature to be added to Osmia itself.
+`notes`, so the user can ask for that feature to be added to Hiveway itself.
 
 ## Your answer
 
 Reply with **one** ```json block holding the complete blueprint and nothing else inside the
 block. Keep explanations short and put them in `notes`. Use the keys that already exist (they
-are in "The current Osmia setup"); don't invent keys for things that exist.
+are in "The current Hiveway setup"); don't invent keys for things that exist.

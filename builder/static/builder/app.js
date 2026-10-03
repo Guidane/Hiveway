@@ -1,4 +1,4 @@
-// Osmia: small helpers for the pages. No build step, no libraries.
+// Hiveway: small helpers for the pages. No build step, no libraries.
 (function () {
   'use strict';
 

@@ -43,7 +43,7 @@
     <input type="file" name="file" accept=".json,.txt,.md,application/json,text/plain">
   </label>
   <p class="muted small">…or paste the answer:</p>
-  <textarea name="text" rows="10" class="code" placeholder='{"osmia_blueprint": 1, "apps": [...]}'>{% if not result %}{{ text|default:'' }}{% endif %}</textarea>
+  <textarea name="text" rows="10" class="code" placeholder='{"hiveway_blueprint": 1, "apps": [...]}'>{% if not result %}{{ text|default:'' }}{% endif %}</textarea>
   <div class="form-actions"><button class="btn primary" type="submit">Preview changes</button></div>
 </form>
 <p class="small muted">Need a prompt for the AI? Use <a href="{% url 'ai_prompt' %}">✨ AI builder</a>.</p>
